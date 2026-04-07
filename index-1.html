@@ -266,13 +266,15 @@ function buildReport() {
     tech:  document.getElementById('genTech').value  || '–',
     instr: document.getElementById('genInstr').value || '–',
   };
+  const anyReduced = [...ffVals, ...fjVals].some(x => x.m !== null && x.v < 500);
+  const voltageNote = anyReduced ? '500 V (reduced on some measurements, see table)' : '500 V (default)';
   const commentHtml = comment
     ? `<div class="section-title" style="margin-top:14px">Comments</div><div class="comment-box">${comment}</div>`
     : '';
   document.getElementById('reportContent').innerHTML = `
     <div class="section-title">Generator information</div>
     <table class="info-table">
-      ${[['Turbine ID',info.id],['Park ID',info.loc],['Date',info.date],['Technician',info.tech],['Instrument',info.instr]]
+      ${[['Turbine ID',info.id],['Park ID',info.loc],['Date',info.date],['Technician',info.tech],['Instrument',info.instr],['Test voltage',voltageNote]]
         .map(([l,v])=>`<tr><td>${l}</td><td>${v}</td></tr>`).join('')}
     </table>
     ${commentHtml}
