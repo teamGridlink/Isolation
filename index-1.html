@@ -195,7 +195,8 @@ function renderBlock(title, pairs, vals, s) {
     const d = vals[i];
     const m = d.m !== null ? d.m.toFixed(2) : '–';
     const vFlag = d.v < 500 ? `<span class="row-flag"> ⚠ ${d.v}V</span>` : '';
-    return `<tr><td class="pair">${fr}</td><td class="pair">${to}</td><td style="text-align:right;font-weight:500">${m}${vFlag}</td></tr>`;
+    const lowFlag = d.m !== null && d.m < 1 ? `<span class="row-flag"> ⚠ Low – verify ambient conditions</span>` : '';
+    return `<tr><td class="pair">${fr}</td><td class="pair">${to}</td><td style="text-align:right">${d.v}V</td><td style="text-align:right;font-weight:500">${m}${vFlag}${lowFlag}</td></tr>`;
   }).join('');
 
   const spreadNote = s.spread > s.avg
@@ -205,7 +206,7 @@ function renderBlock(title, pairs, vals, s) {
   return `
     <div class="section-title" style="margin-top:14px">${title}</div>
     <table class="meas-table" style="margin-bottom:10px">
-      <thead><tr><th>From</th><th>To</th><th style="text-align:right">MΩ</th></tr></thead>
+      <thead><tr><th>From</th><th>To</th><th style="text-align:right">V</th><th style="text-align:right">MΩ</th></tr></thead>
       <tbody>${rows}</tbody>
     </table>
     <div class="stat-grid">
@@ -243,6 +244,7 @@ function buildReport() {
     ${renderBlock('2. Phase – Earth insulation', fjPairs, fjVals, calcStats(fjVals))}
     <div style="font-size:11px;color:#aaa;margin-top:16px;border-top:1px solid #eee;padding-top:10px;line-height:1.6">
       ⚠ Reduced voltage indicates the generator could not sustain full test voltage on that measurement point.
+      Values below 1 MΩ are flagged – assess against ambient temperature and humidity.
       Spread reflects the variation between measurements within each group.
     </div>`;
 }
