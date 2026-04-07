@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Gridlink – Insulation Protocol</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; background: #f4f4f4; min-height: 100vh; padding: 12px; }
+:root { --gl-dark: #3D5C17; --gl-med: #5C8021; --gl-light: #DFE8C8; --gl-alt: #F2F6E8; }
+.app { max-width: 480px; margin: 0 auto; }
+.header { background: var(--gl-dark); color: #fff; padding: 14px 16px; display: flex; align-items: center; gap: 10px; border-radius: 12px 12px 0 0; }
+.header h1 { font-size: 15px; font-weight: 500; }
+.steps { display: flex; background: var(--gl-light); }
+.step-tab { flex: 1; padding: 8px 4px; text-align: center; font-size: 11px; color: #555; cursor: pointer; border-bottom: 3px solid transparent; }
+.step-tab.active { color: var(--gl-dark); border-bottom-color: var(--gl-dark); font-weight: 600; background: var(--gl-alt); }
+.content { padding: 16px; background: #fff; border: 1px solid #ddd; border-top: none; border-radius: 0 0 12px 12px; }
+.section-title { font-size: 12px; font-weight: 600; color: #fff; background: var(--gl-med); padding: 6px 10px; border-radius: 6px; margin: 0 0 10px; }
+.field-row { margin-bottom: 10px; }
+.field-row label { font-size: 12px; color: #666; display: block; margin-bottom: 3px; }
+.field-row input, .field-row textarea { width: 100%; padding: 8px 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; font-family: inherit; }
+.field-row textarea { resize: vertical; min-height: 70px; line-height: 1.5; }
+.meas-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 12px; }
+.meas-table th { background: var(--gl-light); color: var(--gl-dark); font-weight: 600; padding: 6px 8px; text-align: left; font-size: 11px; }
+.meas-table td { padding: 5px 6px; border-bottom: 1px solid #eee; }
+.meas-table tr:nth-child(even) td { background: var(--gl-alt); }
+.meas-table td.pair { color: #888; font-size: 12px; }
+.meas-table input { width: 100%; border: 1px solid #ccc; border-radius: 4px; padding: 4px 6px; font-size: 13px; text-align: right; }
+.meas-table input.volt { width: 60px; }
+.btn-row { display: flex; gap: 8px; margin-top: 14px; }
+.btn { flex: 1; padding: 10px; border: 1px solid var(--gl-dark); border-radius: 8px; background: transparent; color: var(--gl-dark); font-size: 14px; cursor: pointer; font-weight: 500; }
+.btn.primary { background: var(--gl-dark); color: #fff; }
+.btn:active { transform: scale(0.98); }
+.stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+.stat-card { background: #f5f5f5; border-radius: 8px; padding: 10px 12px; }
+.stat-card .lbl { font-size: 11px; color: #888; margin-bottom: 2px; }
+.stat-card .val { font-size: 18px; font-weight: 500; color: #222; }
+.assessment { border-radius: 8px; padding: 10px 12px; margin-bottom: 14px; font-size: 13px; font-weight: 500; }
+.assessment.ok { background: #C6EFCE; color: #276221; }
+.assessment.warn { background: #FFEB9C; color: #9C6500; }
+.row-flag { font-size: 11px; color: #9C6500; }
+.info-table { width: 100%; font-size: 13px; margin-bottom: 14px; border-collapse: collapse; }
+.info-table td { padding: 4px 0; }
+.info-table td:first-child { color: #888; width: 40%; }
+.info-table td:last-child { font-weight: 500; }
+.comment-box { border: 1px solid #ddd; border-radius: 8px; padding: 10px 12px; font-size: 13px; line-height: 1.6; white-space: pre-wrap; margin-bottom: 14px; min-height: 40px; }
+.print-note { font-size: 12px; color: #666; background: #f5f5f5; border-radius: 8px; padding: 10px 12px; margin-bottom: 14px; line-height: 1.5; }
+
+@media print {
+  body { background: #fff; padding: 0; }
+  .steps, .btn-row, .print-note { display: none !important; }
+  .content { border: none; padding: 12px 0; }
+  #step0, #step1, #step2 { display: none !important; }
+  #step3 { display: block !important; }
+  .header, .section-title, .meas-table th { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .meas-table tr:nth-child(even) td { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .assessment { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+      <rect width="28" height="28" rx="6" fill="#5C8021"/>
+      <rect x="4" y="10" width="7" height="8" rx="2" fill="white" opacity="0.9"/>
+      <rect x="17" y="10" width="7" height="8" rx="2" fill="white" opacity="0.9"/>
+      <rect x="10" y="12" width="8" height="4" rx="1.5" fill="white"/>
+    </svg>
+    <h1>Gridlink – Insulation Protocol</h1>
+  </div>
+
+  <div class="steps">
+    <div class="step-tab active" onclick="goStep(0)" id="tab0">1. Info</div>
+    <div class="step-tab" onclick="goStep(1)" id="tab1">2. Phase–Phase</div>
+    <div class="step-tab" onclick="goStep(2)" id="tab2">3. Phase–Earth</div>
+    <div class="step-tab" onclick="goStep(3)" id="tab3">4. Report</div>
+  </div>
+
+  <div class="content">
+
+    <div id="step0">
+      <div class="section-title">Generator information</div>
+      <div class="field-row"><label>Generator ID</label><input id="genId" placeholder="e.g. WTG-04 Gen A"></div>
+      <div class="field-row"><label>Location / Station</label><input id="genLoc" placeholder="e.g. Mariehamn site"></div>
+      <div class="field-row"><label>Date</label><input id="genDate" type="date"></div>
+      <div class="field-row"><label>Technician</label><input id="genTech" placeholder="Full name"></div>
+      <div class="field-row"><label>Test instrument</label><input id="genInstr" placeholder="e.g. Fluke 1587FC"></div>
+      <div class="field-row">
+        <label>Comments</label>
+        <textarea id="genComment" placeholder="e.g. Pre-repair inspection – generator found wet&#10;or&#10;Post-repair acceptance test – generator run dry and warm"></textarea>
+      </div>
+      <div class="btn-row"><button class="btn primary" onclick="goStep(1)">Next →</button></div>
+    </div>
+
+    <div id="step1" style="display:none">
+      <div class="section-title">Phase – Phase measurements</div>
+      <table class="meas-table">
+        <thead><tr><th>From</th><th>To</th><th>V</th><th>MΩ</th></tr></thead>
+        <tbody id="ffBody"></tbody>
+      </table>
+      <div class="btn-row">
+        <button class="btn" onclick="goStep(0)">← Back</button>
+        <button class="btn primary" onclick="goStep(2)">Next →</button>
+      </div>
+    </div>
+
+    <div id="step2" style="display:none">
+      <div class="section-title">Phase – Earth measurements</div>
+      <table class="meas-table">
+        <thead><tr><th>From</th><th>To</th><th>V</th><th>MΩ</th></tr></thead>
+        <tbody id="fjBody"></tbody>
+      </table>
+      <div class="btn-row">
+        <button class="btn" onclick="goStep(1)">← Back</button>
+        <button class="btn primary" onclick="buildReport(); goStep(3)">View report →</button>
+      </div>
+    </div>
+
+    <div id="step3" style="display:none">
+      <div class="print-note">Tryck "Save as PDF" och välj <strong>Save as PDF</strong> som skrivare. På iOS: Dela → Print → nypa ut för att förhandsvisa → dela som PDF.</div>
+      <div id="reportContent"></div>
+      <div class="btn-row">
+        <button class="btn" onclick="goStep(0)">← Edit</button>
+        <button class="btn primary" onclick="window.print()">Save as PDF</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const ffPairs = [
+  ["U1","V1"],["U1","W1"],["V1","W1"],
+  ["U2","V2"],["U2","W2"],["V2","W2"],
+  ["U1","U2"],["U1","V2"],["U1","W2"],
+  ["V1","U2"],["V1","V2"],["V1","W2"],
+  ["W1","U2"],["W1","V2"],["W1","W2"]
+];
+const fjPairs = [
+  ["Earth","U1"],["Earth","U2"],["Earth","V1"],
+  ["Earth","V2"],["Earth","W1"],["Earth","W2"]
+];
+
+function buildTable(pairs, bodyId) {
+  const tbody = document.getElementById(bodyId);
+  pairs.forEach(([fr,to], i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="pair">${fr}</td><td class="pair">${to}</td>
+      <td><input class="volt" type="number" value="500" min="1" data-pair="${bodyId}-${i}-v"></td>
+      <td><input type="number" step="0.01" placeholder="–" data-pair="${bodyId}-${i}-m"></td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+buildTable(ffPairs, 'ffBody');
+buildTable(fjPairs, 'fjBody');
+
+function getVals(bodyId) {
+  const rows = document.querySelectorAll(`[data-pair^="${bodyId}"]`);
+  const result = [];
+  for (let i = 0; i < rows.length; i += 2) {
+    const v = parseFloat(rows[i].value) || 500;
+    const m = parseFloat(rows[i+1].value);
+    result.push({ v, m: isNaN(m) ? null : m });
+  }
+  return result;
+}
+
+function calcStats(vals) {
+  const nums = vals.filter(x => x.m !== null).map(x => x.m);
+  if (!nums.length) return null;
+  const min = Math.min(...nums), max = Math.max(...nums);
+  const avg = nums.reduce((a,b)=>a+b,0) / nums.length;
+  const reducedCount = vals.filter(x => x.v < 500 && x.m !== null).length;
+  return { min, max, avg, spread: max - min, reducedCount, count: nums.length };
+}
+
+function renderBlock(title, pairs, vals, s) {
+  if (!s) return '';
+  const allReduced = s.reducedCount === s.count;
+  const someReduced = s.reducedCount > 0;
+  const assess = allReduced
+    ? { cls:'warn', msg:'All measurements at reduced voltage – generator could not hold full test voltage' }
+    : someReduced
+    ? { cls:'warn', msg:`${s.reducedCount} measurement(s) at reduced voltage – generator could not hold full test voltage on those points` }
+    : { cls:'ok', msg:'All measurements taken at full test voltage' };
+
+  const rows = pairs.map(([fr,to], i) => {
+    const d = vals[i];
+    const m = d.m !== null ? d.m.toFixed(2) : '–';
+    const vFlag = d.v < 500 ? `<span class="row-flag"> ⚠ ${d.v}V</span>` : '';
+    return `<tr><td class="pair">${fr}</td><td class="pair">${to}</td><td style="text-align:right;font-weight:500">${m}${vFlag}</td></tr>`;
+  }).join('');
+
+  const spreadNote = s.spread > s.avg
+    ? `High spread (${s.spread.toFixed(2)} MΩ) relative to average – uneven insulation condition.`
+    : `Spread ${s.spread.toFixed(2)} MΩ.`;
+
+  return `
+    <div class="section-title" style="margin-top:14px">${title}</div>
+    <table class="meas-table" style="margin-bottom:10px">
+      <thead><tr><th>From</th><th>To</th><th style="text-align:right">MΩ</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="lbl">Minimum</div><div class="val">${s.min.toFixed(2)} MΩ</div></div>
+      <div class="stat-card"><div class="lbl">Maximum</div><div class="val">${s.max.toFixed(2)} MΩ</div></div>
+      <div class="stat-card"><div class="lbl">Average</div><div class="val">${s.avg.toFixed(2)} MΩ</div></div>
+      <div class="stat-card"><div class="lbl">Spread (max−min)</div><div class="val">${s.spread.toFixed(2)} MΩ</div></div>
+    </div>
+    <div class="assessment ${assess.cls}">${assess.msg}</div>
+    <div style="font-size:12px;color:#888;margin-bottom:12px">${spreadNote}</div>`;
+}
+
+function buildReport() {
+  const ffVals = getVals('ffBody');
+  const fjVals = getVals('fjBody');
+  const comment = document.getElementById('genComment').value.trim();
+  const info = {
+    id:    document.getElementById('genId').value    || '–',
+    loc:   document.getElementById('genLoc').value   || '–',
+    date:  document.getElementById('genDate').value  || '–',
+    tech:  document.getElementById('genTech').value  || '–',
+    instr: document.getElementById('genInstr').value || '–',
+  };
+  const commentHtml = comment
+    ? `<div class="section-title" style="margin-top:14px">Comments</div><div class="comment-box">${comment}</div>`
+    : '';
+  document.getElementById('reportContent').innerHTML = `
+    <div class="section-title">Generator information</div>
+    <table class="info-table">
+      ${[['Generator ID',info.id],['Location',info.loc],['Date',info.date],['Technician',info.tech],['Instrument',info.instr]]
+        .map(([l,v])=>`<tr><td>${l}</td><td>${v}</td></tr>`).join('')}
+    </table>
+    ${commentHtml}
+    ${renderBlock('1. Phase – Phase insulation', ffPairs, ffVals, calcStats(ffVals))}
+    ${renderBlock('2. Phase – Earth insulation', fjPairs, fjVals, calcStats(fjVals))}
+    <div style="font-size:11px;color:#aaa;margin-top:16px;border-top:1px solid #eee;padding-top:10px;line-height:1.6">
+      ⚠ Reduced voltage indicates the generator could not sustain full test voltage on that measurement point.
+      Spread reflects the variation between measurements within each group.
+    </div>`;
+}
+
+function goStep(n) {
+  [0,1,2,3].forEach(i => {
+    document.getElementById(`step${i}`).style.display = i===n ? 'block' : 'none';
+    document.getElementById(`tab${i}`).classList.toggle('active', i===n);
+  });
+}
+
+document.getElementById('genDate').valueAsDate = new Date();
+</script>
+</body>
+</html>
