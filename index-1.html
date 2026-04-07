@@ -219,6 +219,42 @@ function renderBlock(title, pairs, vals, s) {
     <div style="font-size:12px;color:#888;margin-bottom:12px">${spreadNote}</div>`;
 }
 
+function renderTerminalSummary(pairs, vals) {
+  const totals = {};
+  const counts = {};
+  pairs.forEach(([fr, to], i) => {
+    const m = vals[i].m;
+    if (m === null) return;
+    [fr, to].forEach(t => {
+      totals[t] = (totals[t] || 0) + m;
+      counts[t] = (counts[t] || 0) + 1;
+    });
+  });
+
+  const terminals = Object.keys(totals).map(t => ({
+    name: t, avg: totals[t] / counts[t], count: counts[t]
+  })).sort((a, b) => a.avg - b.avg);
+
+  if (!terminals.length) return '';
+
+  const rows = terminals.map((t, i) => {
+    const bg = i % 2 === 0 ? '' : 'background:#F2F6E8';
+    return `<tr style="${bg}">
+      <td class="pair">${t.name}</td>
+      <td style="text-align:right;font-weight:500">${t.avg.toFixed(2)} MΩ</td>
+      <td style="text-align:right;color:#888;font-size:11px">${t.count} meas.</td>
+    </tr>`;
+  }).join('');
+
+  return `
+    <div class="section-title" style="margin-top:14px">3. Terminal overview – Phase–Phase (sorted lowest first)</div>
+    <p style="font-size:12px;color:#888;margin-bottom:8px">Average resistance per terminal. A terminal significantly lower than the others may indicate insulation degradation rather than moisture – moisture typically affects all terminals similarly.</p>
+    <table class="meas-table" style="margin-bottom:10px">
+      <thead><tr><th>Terminal</th><th style="text-align:right">Average MΩ</th><th style="text-align:right">Measurements</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
 function buildReport() {
   const ffVals = getVals('ffBody');
   const fjVals = getVals('fjBody');
@@ -242,6 +278,7 @@ function buildReport() {
     ${commentHtml}
     ${renderBlock('1. Phase – Phase insulation', ffPairs, ffVals, calcStats(ffVals))}
     ${renderBlock('2. Phase – Earth insulation', fjPairs, fjVals, calcStats(fjVals))}
+    ${renderTerminalSummary(ffPairs, ffVals)}
     <div style="font-size:11px;color:#aaa;margin-top:16px;border-top:1px solid #eee;padding-top:10px;line-height:1.6">
       ⚠ Reduced voltage indicates the generator could not sustain full test voltage on that measurement point.
       Values below 1 MΩ are flagged – assess against ambient temperature and humidity.
