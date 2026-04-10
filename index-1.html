@@ -91,6 +91,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-s
         <textarea id="genComment" placeholder="e.g. Pre-repair inspection – generator found wet&#10;or&#10;Post-repair acceptance test – generator run dry and warm"></textarea>
       </div>
       <div class="btn-row"><button class="btn primary" onclick="goStep(1)">Next →</button></div>
+      <button class="btn" onclick="clearStorage()" style="margin-top:8px;border-color:#999;color:#999">Rensa / Ny mätning</button>
     </div>
 
     <div id="step1" style="display:none">
@@ -303,6 +304,57 @@ function goStep(n) {
 }
 
 document.getElementById('genDate').valueAsDate = new Date();
+// Spara alla fält automatiskt
+function saveToStorage() {
+  const data = {
+    genId: document.getElementById('genId').value,
+    genLoc: document.getElementById('genLoc').value,
+    genDate: document.getElementById('genDate').value,
+    genTech: document.getElementById('genTech').value,
+    genInstr: document.getElementById('genInstr').value,
+    genComment: document.getElementById('genComment').value,
+    reportComment: document.getElementById('reportComment').value,
+  };
+  const ffRows = document.querySelectorAll('[data-pair^="ffBody"]');
+  const fjRows = document.querySelectorAll('[data-pair^="fjBody"]');
+  data.ff = Array.from(ffRows).map(r => r.value);
+  data.fj = Array.from(fjRows).map(r => r.value);
+  localStorage.setItem('gridlink_protocol', JSON.stringify(data));
+}
+
+// Ladda sparad data
+function loadFromStorage() {
+  const raw = localStorage.getItem('gridlink_protocol');
+  if (!raw) return;
+  const data = JSON.parse(raw);
+  if (data.genId) document.getElementById('genId').value = data.genId;
+  if (data.genLoc) document.getElementById('genLoc').value = data.genLoc;
+  if (data.genDate) document.getElementById('genDate').value = data.genDate;
+  if (data.genTech) document.getElementById('genTech').value = data.genTech;
+  if (data.genInstr) document.getElementById('genInstr').value = data.genInstr;
+  if (data.genComment) document.getElementById('genComment').value = data.genComment;
+  if (data.reportComment) document.getElementById('reportComment').value = data.reportComment;
+  const ffRows = document.querySelectorAll('[data-pair^="ffBody"]');
+  const fjRows = document.querySelectorAll('[data-pair^="fjBody"]');
+  if (data.ff) data.ff.forEach((v, i) => { if (ffRows[i]) ffRows[i].value = v; });
+  if (data.fj) data.fj.forEach((v, i) => { if (fjRows[i]) fjRows[i].value = v; });
+}
+
+// Lägg till autosave på alla inputs
+document.querySelectorAll('input, textarea').forEach(el => {
+  el.addEventListener('input', saveToStorage);
+});
+
+// Lägg till en "Ny mätning"-knapp som rensar allt
+function clearStorage() {
+  if (confirm('Rensa alla värden och starta ny mätning?')) {
+    localStorage.removeItem('gridlink_protocol');
+    location.reload();
+  }
+}
+
+// Ladda vid start
+loadFromStorage();
 </script>
 </body>
 </html>
