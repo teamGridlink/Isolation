@@ -210,7 +210,7 @@ function renderBlock(title, pairs, vals, s) {
     const m = d.m !== null ? d.m.toFixed(2) : '–';
     const vFlag = d.v < 500 ? `<span class="row-flag"> ⚠ ${d.v}V</span>` : '';
     const lowFlag = d.m !== null && d.m < 1 ? `<span class="row-flag"> ⚠ Low – verify ambient conditions</span>` : '';
-    return `<tr><td class="pair">${fr}</td><td class="pair">${to}</td><td style="text-align:right">${d.v}V</td><td style="text-align:right;font-weight:500">${m}${vFlag}${lowFlag}</td></tr>`;
+    return `<tr><td class="pair">${fr}</td><td class="pair">${to}</td><td style="text-align:right">${d.v}V${vFlag}</td><td style="text-align:right;font-weight:500">${m}${lowFlag}</td></tr>`;
   }).join('');
 
   const spreadNote = s.spread > s.avg
@@ -315,7 +315,8 @@ function printReport() {
   const date = document.getElementById('genDate').value || 'unknown';
   document.title = `${loc}-${id}-${date}`;
 
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+                (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   if (isIOS) {
     document.getElementById('reportContent').style.zoom = '0.75';
   }
