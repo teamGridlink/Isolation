@@ -208,9 +208,11 @@ function renderBlock(title, pairs, vals, s) {
   const rows = pairs.map(([fr,to], i) => {
     const d = vals[i];
     const m = d.m !== null ? d.m.toFixed(2) : '–';
-    const vFlag = d.v < 500 ? `<span class="row-flag"> ⚠ ${d.v}V</span>` : '';
+    const vCell = d.v < 500
+      ? `<span class="row-flag">⚠ ${d.v}V</span>`
+      : `${d.v}V`;
     const lowFlag = d.m !== null && d.m < 1 ? `<span class="row-flag"> ⚠ Low – verify ambient conditions</span>` : '';
-    return `<tr><td class="pair">${fr}</td><td class="pair">${to}</td><td style="text-align:right">${d.v}V${vFlag}</td><td style="text-align:right;font-weight:500">${m}${lowFlag}</td></tr>`;
+    return `<tr><td class="pair">${fr}</td><td class="pair">${to}</td><td style="text-align:right">${vCell}</td><td style="text-align:right;font-weight:500">${m}${lowFlag}</td></tr>`;
   }).join('');
 
   const spreadNote = s.spread > s.avg
