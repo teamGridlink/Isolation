@@ -314,8 +314,18 @@ function printReport() {
   const loc = document.getElementById('genLoc').value || 'unknown';
   const date = document.getElementById('genDate').value || 'unknown';
   document.title = `${loc}-${id}-${date}`;
+
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  if (isIOS) {
+    document.getElementById('reportContent').style.zoom = '0.75';
+  }
+
   window.print();
   document.title = 'Gridlink – Isolation Protocol';
+
+  if (isIOS) {
+    document.getElementById('reportContent').style.zoom = '';
+  }
 }
 
 function goStep(n) {
